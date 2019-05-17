@@ -1,0 +1,1106 @@
+pipeline {
+    agent any
+    
+    stages{
+        stage('Build'){
+            options {
+                retry(3)
+            }
+            steps{
+                echo "Before error statement"
+                echo "Error statement just got executed"
+                echo "After error statement"
+
+            }
+        }
+        
+    }
+}
+
+######################################
+
+pipeline {
+    agent any
+    
+    stages{
+        stage('Build'){
+            options {
+                retry(3)
+            }
+            steps{
+                echo "Before setting current build to FAILURE"
+                script {
+                    currentBuild.result = 'FAILURE'
+                }
+                echo "After setting current build to FAILURE"
+
+            }
+        }
+        
+    }
+}
+
+######################################
+######### timeout ######################
+
+pipeline {
+    agent any
+    
+    stages{
+        stage('Build'){
+            options {
+               timeout(time: 1, unit: 'SECONDS') //values, NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, HOURS, DAYS
+            }
+            steps{
+                echo "HEllo WORLD"
+                seleep 2           
+            }
+        }
+        
+    }
+}   
+
+######### timeout stamps build state ######################
+pipeline {
+    agent any
+    
+    stages{
+        stage('Build'){
+            options{
+                timestamps()
+            }
+                steps {
+                 echo 'hello world in Building...'
+                    echo 'hello world in Building agin...'
+                    }
+        }
+        stage('Test'){
+            steps {
+                echo 'hello world Testing...'
+                echo 'hello world testing again...'
+            }
+        }
+        
+    }
+}
+######### timeout stamps for pipeline level ######################
+pipeline {
+    agent any
+    options{
+                timestamps()
+            }
+    
+    stages{
+        stage('Build'){
+            
+                steps {
+                 echo 'hello world in Building...'
+                    echo 'hello world in Building agin...'
+                    }
+        }
+        stage('Test'){
+            steps {
+                echo 'hello world Testing...'
+                echo 'hello world testing again...'
+            }
+        }
+        
+    }
+}
+######### timeout stamps block ######################
+pipeline {
+    agent any
+        stages{
+        stage('Build'){
+            
+                steps {
+                    timestamps{
+                        echo 'hello world in Building...'
+                        echo 'hello world in Building agin...'
+                    }
+                }
+        }
+        stage('Test'){
+            steps {
+                echo 'hello world Testing...'
+                echo 'hello world testing again...'
+            }
+        }
+        
+    }
+}
+######### skipDefault pipeline ######################
+pipeline {
+    agent none
+        stages{
+        stage('Build'){
+            
+                steps {
+                    agent any
+                    options {                   
+
+                            skipDefaultCheckout()
+                        }
+
+                }
+                steps{
+
+                    echo 'hello world'
+                }
+        }
+               
+    }
+}
+######### environment variable pipeline ######################
+pipeline {
+    agent any
+        environment {
+        name1 = "jeff"
+        name2 = "john"
+        }
+        stages{
+            stage('Build'){
+                environment{
+                    name3 = "jamie"
+                }
+
+                steps {
+                    echo "name1 ${name1}"
+                    echo "name2 ${name2}"
+                    echo "name3 ${name3}"
+                }
+            }    
+        }
+               
+    }
+######### environment variable pipeline ######################
+pipeline {
+    agent any
+        environment {
+        name1 = "jeff"
+        name2 = "john"
+        }
+        stages{
+            stage('Build'){
+                environment{
+                    name3 = "jamie"
+                }
+
+                steps {
+                    echo "name1 ${name1}"
+                    echo "name2 ${name2}"
+                    echo "name3 ${name3}"
+                }
+            }
+            stage('Test'){
+                steps {
+                    echo "name1 ${name1}"
+                    echo "name2 ${name2}"
+                    echo "name3 ${name3}"
+                }
+            }    
+        }
+               
+    }
+ ######### environment variable pipeline ######################              
+    
+    pipeline {
+    agent any
+        environment {
+        name1 = "jeff"
+        name2 = "john"
+        }
+        stages{
+            stage('Build'){
+                environment{
+                    name2 = "mike"
+                    name3 = "jamie"
+                }
+
+                steps {
+                    echo "name1 ${name1}"
+                    echo "name2 ${name2}"
+                    echo "name3 ${name3}"
+                }
+            }    
+        }
+               
+    }
+########################### bat fuction ##################################
+
+    
+    pipeline {
+    agent any
+        environment {
+        name1 = "jeff"
+        name2 = "john"
+        }
+        stages{
+            stage('Build'){
+                environment{
+                    name2 = "mike"
+                    name3 = "jamie"
+                }
+
+                steps {
+                    echo "name1 ${name1}"
+                    echo "name2 ${name2}"
+                    echo "name3 ${name3}"
+                    sh "printenv"
+                }
+            }    
+        }
+               
+    }
+
+    ########################### UserName and Password ##################################
+
+      pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                environment{
+                    SOME_USERNAME_PASSWORD = credentials('SOME_USERNAME_PASSWORD')
+                    SOME_SECRET = credentials('some_secret')
+                    
+                }
+
+                steps {
+                    echo "SOME_USERNAME_PASSWORD ${SOME_USERNAME_PASSWORD}" //some SOME_USERNAME_PASSWORD is in the format of username:password
+                    echo "SOME_USERNAME_PASSWORD_USR ${SOME_USERNAME_PASSWORD_USR}"
+                    echo "SOME_USERNAME_PASSWORD_PSW ${SOME_USERNAME_PASSWORD_PSW}"
+                    echo "SOME_SECRET ${SOME_SECRET}"
+                }
+            }    
+        }
+               
+    }
+        ########################### when condition ##################################
+
+        pipeline {
+    agent any
+        environment{
+            DEPLOY_TO='production'
+        }
+        stages{
+            stage('Build'){
+                when{
+                    environment name: 'DEPLOY_TO', value: 'production'
+                               
+                }
+
+                steps {
+                    echo 'Deploying'
+                
+                }
+            }    
+        }
+               
+    }
+
+    ########################### when condition value change ##################################
+
+        pipeline {
+    agent any
+        environment{
+            DEPLOY_TO='test'
+        }
+        stages{
+            stage('Build'){
+                when{
+                    environment name: 'DEPLOY_TO', value: 'production'
+                               
+                }
+
+                steps {
+                    echo 'Deploying'
+                
+                }
+            }    
+        }
+               
+    }
+    ############################ equal condition ####################################
+
+       pipeline {
+    agent any
+        environment{
+            some_name="jeff"
+        }
+        stages{
+            stage('Build'){
+                when{
+                    equals expected: "jeff", actual: some_name
+                               
+                }
+
+                steps {
+                    echo "${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+        ############################ equal condition different name ####################################
+
+       pipeline {
+    agent any
+        environment{
+            some_name="John"
+        }
+        stages{
+            stage('Build'){
+                when{
+                    equals expected: "jeff", actual: some_name
+                               
+                }
+
+                steps {
+                    echo "${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+ 
+    ############################ not condition different name ####################################
+
+       pipeline {
+    agent any
+        environment{
+            some_name="John"
+        }
+        stages{
+            stage('Build'){
+                when{
+                not{
+                    equals expected: "jeff", actual: some_name
+                               
+                }
+                }
+
+                steps {
+                    echo "${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+    ####################### expersion condition #########################################
+
+
+     pipeline {
+    agent any
+        environment{
+            version="1.0"
+        }
+        stages{
+            stage('Build'){
+                when{
+                expression{
+                    version == "1.0"
+                               
+                }
+                }
+
+                steps {
+                    echo "${version}"
+                
+                }
+            }    
+        }
+               
+    }
+    ####################################Allof condition#################################
+    
+     pipeline {
+    agent any
+        environment{
+            version="1.0"
+            some_name="jeff"
+        }
+        stages{
+            stage('Build'){
+                when{
+                allof{
+                    environment name: "version", value: "1.0"
+                    environment name: "some_name", value: "jeff"
+                               
+                }
+                }
+
+                steps {
+                    echo "Building allof ${version} ${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+     ####################################Allof condition#################################
+
+
+     pipeline {
+    agent any
+        environment{
+            version="2.0"
+            some_name="jeff"
+        }
+        stages{
+            stage('Build'){
+                when{
+                allof{
+                    environment name: "version", value: "1.0"
+                    environment name: "some_name", value: "jeff"
+                               
+                }
+                }
+
+                steps {
+                    echo "Building allof ${version} ${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+
+    //not execute the steps//
+     ####################################anyof condition#################################
+
+
+     pipeline {
+    agent any
+        environment{
+            version="2.0"
+            some_name="jeff"
+        }
+        stages{
+            stage('Build'){
+                when{
+                anyof{
+                    environment name: "version", value: "1.0"
+                    environment name: "some_name", value: "jeff"
+                               
+                }
+                }
+
+                steps {
+                    echo "Building allof ${version} ${some_name}"
+                
+                }
+            }    
+        }
+               
+    }
+     #################################### Branch condition #################################
+
+      pipeline {
+    agent any
+        
+        stages{
+            stage('Build Master'){
+                when{
+                    branch 'master'
+                }
+           
+                steps {
+                    echo "Building Master"
+                
+                }
+            }
+                
+        }
+        stages{
+            stage('Build Dev'){
+                when{
+                    branch 'dev'
+                }
+           
+                steps {
+                    echo "Building dev"
+                
+                }
+            }
+                
+        }
+               
+    }
+
+     #################################### Branch condition #################################
+
+      pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    buildingTag()
+                }
+           
+                steps {
+                    echo "Hello World Building Tag"
+                
+                }
+            }
+                
+        }
+               
+    }
+    #################################### stage-when changelog #################################
+
+          pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    changelog '.*some_text.*'
+                }
+           
+                steps {
+                    echo "Hello World changelog"
+                
+                }
+            }
+                
+        }
+               
+    }
+    #################################### normal.txt #################################
+
+    some text 5
+     #################################### change request condition #################################
+       pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    changeRquest()
+                }
+           
+                steps {
+                    echo "Hello World change request"
+                
+                }
+            }
+                
+        }
+               
+    }
+    #################################### normal.txt #################################
+
+    some text 1
+
+    #################################### change request when titile condition #################################
+
+       pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    changeRques title: "when-pr"
+                }
+           
+                steps {
+                    echo "Hello World change request"
+                
+                }
+            }
+                
+        }
+               
+    }
+    #################################### normal.txt #################################
+
+    some text 1
+
+    #################################### change set condition #################################
+
+    pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    changeset glob: "*.js"
+                }
+           
+                steps {
+                    echo "Hello World changeset JS"
+                
+                }
+            }
+                
+        }
+               
+        }
+
+#################################### helloworl.js #################################
+
+some js code 1
+
+################################ normal.txt #######################################
+
+    some text 1
+#################################### casesensitive:true #################################
+
+     pipeline {
+    agent any
+        
+        stages{
+            stage('Build'){
+                when{
+                    changeset glob: "*wORLD.js" , casesensitive:true
+                }
+           
+                steps {
+                    echo "Hello World changeset JS"
+                
+                }
+            }
+                
+        }
+               
+        }
+#################################### before Agent #################################
+
+//when the agent is available then execute the pipeline, if the before agent equals to true. if no then it will not check.
+
+pipeline {
+    agent none
+        environment{
+            DEPLOY_TO='dev'
+        }
+        
+        stages{
+            stage('Build'){
+                agent {
+                    label "Slave 1"
+                }
+
+                when{
+                    beforeAgent false
+                    environment name: 'DEPLOY_TO', value: 'production'
+                }
+           
+                steps {
+                    echo "Hello World"
+                
+                }
+            }
+                
+        }
+               
+        }
+
+#################################### parallel block #################################
+// fail fast equel to true so any one stage fails all the other stage also gets fail
+
+pipeline {
+    agent any
+          
+        stages('Stages running in parallel') {
+            failFast true
+            parallel {
+             stage ('Stage1'){
+                 steps {
+                     echo "Stage1 executing"
+                     sleep 10
+                 }
+             }  
+                stage ('Stage2'){
+                 steps {
+                     echo "Stage2 executing"
+                     sleep 10
+                 }
+             } 
+                stage ('Stage3'){
+                 steps {
+                     echo "Stage3 executing"
+                     sleep 10
+                 }
+             }  
+            }
+            
+                
+        }
+               
+        }
+#################################### sequence stage #################################
+
+pipeline {
+    agent any
+          
+        stages('Stage1') {
+            
+             stage ('Stage1'){
+                 steps {
+                     echo "Stage1 executing"
+                     sleep 10
+                 }
+             }  
+                stage ('Stage2'){
+                 steps {
+                     echo "Stage2 executing"
+                     sleep 10
+                 }
+             } 
+                stage ('Stage3'){
+                 steps {
+                     echo "Stage3 executing"
+                     sleep 10
+                 }
+             }  
+            }
+            
+                
+        }
+
+
+#################################### parallel block in error condition #################################
+// fail fast equel to true so any one stage fails all the other stage also gets fail
+
+pipeline {
+    agent any
+          
+        stages('Stages running in parallel') {
+            failFast true
+            parallel {
+             stage ('Stage1'){
+                 steps {
+                     echo "Stage1 executing"
+                     sleep 10
+                 }
+             }  
+                stage ('Stage2'){
+                 steps {
+                     echo "Stage2 executing"
+                     sleep 2
+                     echo 'simulating error happend on stage 2'
+                 }
+             } 
+                stage ('Stage3'){
+                 steps {
+                     echo "Stage3 executing"
+                     sleep 10
+                 }
+             }  
+            }
+            
+                
+        }
+               
+        }
+#################################### input or parameter in pipeline #################################
+
+pipeline {
+    agent any
+    stages{
+        stage('Build'){
+            input{
+                message "please spcifiy environment:"
+                ok "OK"
+                        submitter "dummyuser,admin@localhost.com"
+                        sumitterParameter "whoSubmitter"
+                        parameter{
+                            //single text field param
+                            string(name: 'environment', defaultvalue: 'Dev', description: 'Environment to build for (valid value: Dev, Test, Prod)')
+                            string(name: 'version', defaultvalue: '1.0', description: 'version number to build for')
+                            //check box using booleanParm
+                            booleanParm(name: 'to_deploy_to_environment', defaultvalue: true, description: '')
+                            //drobdown using choice 'US-EAST-1\nus-WEST-2' to seaprate option in drobdown list
+                            choice(choices: 'US-EAST-1\nus-WEST-2', description: 'what AWS regions?, name: 'region')
+                            //text
+                            text(name: 'myText', defaultvalue: 'myTextvalue, description:'myText')
+                            //password using pass
+                            password(name: 'mypassword', defaultvalue: 'mypasswordvalue', description: 'mydescription')
+                            //file is using file
+                            file(name: 'myfile', description: 'filedescription')
+                            credentials(name: 'mycredentials', description: mycredentialsDesc, required: true)
+
+                        }
+            }
+            steps {
+                echo "we are building  for ${environment}, ${version}, and we are deploying to environment: ${to_deploy_to_environment}"
+                echo "region:{region}, myText.${myText}, mypassword: ${mypassword}, and myFile: ${myfile}
+                echo "submitter is: ${whoSubmitter}"
+                echo "selected credentials is: ${mycredentials}"
+            }
+        }
+    }
+}
+
+#################################### Post condition pipeline #################################
+
+
+pipeline {
+    agent any
+     
+     stages{
+        stage('Build'){
+         steps {
+                echo 'building'
+                erro("Build failed")
+         }
+
+     }
+     }
+          
+       post {
+           success {
+               echo 'post scussess is called'
+           }
+           failure {
+             echo 'post failure is called'  
+           }
+           always {
+               echo 'post always is called'
+           }
+       }
+               
+        }
+#################################### Post fixed condition pipeline #################################
+pipeline {
+    agent any
+     
+     stages{
+        stage('Build'){
+         steps {
+                echo 'building'
+            
+         }
+
+     }
+     }
+          
+       post {
+           //only runs if the current pipeline's  or stage's run is successful and the previous run failed or was unstable
+           fixed {
+               echo 'post -> fixed is called'
+           }
+          
+       }
+               
+        }
+#################################### Post fixed condition pipeline #################################
+pipeline {
+    agent any
+     
+     stages{
+        stage('Build'){
+         steps {
+                echo 'building'
+            
+         }
+
+     }
+     }
+          
+       post {
+           //only runs if the current pipeline's  or stage's is failure, unstable, or aborted and the previous run was successful.
+           fixed {
+               echo 'post -> regression is called'
+           }
+          
+       }
+               
+        }
+
+#################################### Post fixed condition pipeline #################################
+
+        pipeline {
+    agent any
+     
+     stages{
+        stage('Build'){
+         steps {
+                echo 'building'
+                script{
+                    currentBuild.result = 'ABORTED'
+                }
+            
+         }
+
+     }
+     }
+          
+       post {
+           //only runs if the current pipeline's  or stage's run has an "aborted" status, usually due to the pipeline being manually aborted.
+           fixed {
+               echo 'post->aborted is called'
+           }
+          
+       }
+               
+        }
+    #################################### Build Discard #################################
+    pipeline {
+    agent any
+     options {
+         buildDiscarder(logRotator(numToKeepStr: '2'))
+     }
+     stages{
+        stage('Build'){
+         steps {
+                echo 'HelloWorld'
+            }
+
+        }
+     }
+}
+    #################################### Build Disable concurrentBuild #################################    
+    pipeline {
+    agent any
+     options {
+         disableConcurrentBuilds()
+     }
+     stages{
+        stage('Build'){
+         steps {
+                sleep {
+                    sleep(time: 10, unit: 'SECONDS') |
+                    echo 'Hello World'
+                }
+            }
+
+        }
+     }
+}
+#################################### Build Disable concurrentBuild ################################# 
+
+ pipeline {
+    agent any
+     options {
+         timestamps()
+         //overrideIndexTrigger(true)
+     }
+     stages{
+        stage('Build'){
+         steps {
+                sleep {
+                    echo 'Hello World 1'
+                }
+            }
+
+        }
+     }
+}
+#################################### Build skip condition for unstable ################################# 
+
+ pipeline {
+    agent any
+     options {
+         timestamps()
+         //overrideIndexTrigger(true)
+     }
+     stages{
+        stage('Build'){
+         steps {
+                
+                    echo "setting current build to unstable"
+                    script{
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                
+            }
+
+        }
+        stages('Deploy'){
+            steps{
+                echo "Deploy is running"
+            }
+        }
+     }
+}
+
+#################################### checkout sub directory ################################# 
+
+ pipeline {
+    agent any
+     options {
+         checkoutToSubdirectory('someSubDir')
+     }
+     stages{
+        stage('Build'){
+         steps {
+                sleep {
+                    echo 'Hello World'
+                }
+            }
+
+        }
+     }
+}
+
+#################################### pipeline for new containerper stage ################################# 
+ pipeline {
+    agent{
+     docker {
+         image 'ubuntu:latest'
+     }
+    }
+     options{
+         newContainerPerStage()
+     }
+     stages{
+        stage('Build'){
+         steps {
+                
+                    sh 'cat /etc/lsb-release'
+                }
+            }
+        stage('Deploy'){
+         steps {
+                
+                    sh 'cat /etc/lsb-release'
+                }
+            }
+
+
+        }
+ }
+   #################################### pipeline prameter level #################################
+        
+pipeline {
+    agent any
+    stages{
+        stage('Build'){
+            input{
+                message "please spcifiy environment:"
+                ok "OK"
+                        submitter "dummyuser,admin@localhost.com"
+                        sumitterParameter "whoIsSubmitter"
+                        parameter{
+                            //single text field param
+                            string(name: 'environment', defaultValue: 'Dev', description: 'Environment to build for (valid value: Dev, Test, Prod)')
+                            string(name: 'version', defaultValue: '1.0', description: 'version number to build for')
+                            //check box using booleanParm
+                            booleanParam(name: 'to_deploy_to_environment', defaultValue: true, description: '')
+                            //drobdown using choice 'US-EAST-1\nus-WEST-2', to seaprate option in drobdown list
+                            choice(choices: 'US-EAST-1\nus-WEST-2', description: 'what AWS regions?', name: 'region')
+                            //text
+                            text(name: 'myText', defaultValue: 'myTextvalue', description:'myText')
+                            //password using pass
+                            password(name: 'mypassword', defaultValue: 'mypasswordvalue', description: 'mydescription')
+                            //file is using file
+                            file(name: 'myfile', description: 'filedescription')
+                            credentials(name: 'mycredentials', description: mycredentialsDesc, required: true)
+
+                        }
+            }
+            steps {
+                echo "we are building  for ${environment}, ${version}, and we are deploying to environment: ${to_deploy_to_environment}"
+                echo "region:{region}, myText.${myText}, mypassword: ${mypassword}, and myFile: ${myfile}"
+                echo "submitter is: ${whoIsSubmitter}"
+                echo "selected credentials is: ${mycredentials}"
+            }
+        }
+    }
+}
